@@ -1,13 +1,12 @@
 const express = require('express');
+const { default: mongoose } = require('mongoose');
 const { Server } = require('socket.io');
-
+const { User } = require('./src/controllers');
 const app = express();
 const http = require('http').Server(app)
 const io = new Server(http)
 
-// app.use('/', (req, res) => {
-//     res.sendFile(__dirname + '/public/index.html')
-// })
+
 app.get('/server', (req, res) => {
     res.send("Socket server is live")
 })
@@ -15,6 +14,22 @@ app.use(express.static('public'))
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/public/index.html")
 })
+
+/**
+ * MongoDb Connection
+ */
+mongoose.connect('mongodb+srv://sandeep659:Pvzv208BBJFxXWtG@cluster0.thtow9l.mongodb.net/?retryWrites=true&w=majority', (res) => {
+    console.log("mongodb", res)
+})
+
+app.use(express.json());
+app.use('/user', User)
+
+/**
+ * 
+ * @param {Sockets } 
+ * @returns 
+ */
 
 const sortByStatus = (arr) => {
     return arr.sort((a, b) => {
