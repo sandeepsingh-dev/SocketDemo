@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="./index.css">
+    <!-- <script src="./socket.min.js"></script> -->
+    <!-- <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"
+        integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
+        crossorigin="anonymous"></script> -->
+    <script>
+        var socket = io("http://localhost:3000", {
+            auth: {
+                token: 'Xekjwhewnmhkl WEbWEBWEBWEBEWBEBEBEBEBEBE'
+            }
+        });
+
+        window.onload = () => {
+            const element = document.getElementById('message-input')
+            element.addEventListener('change', (e) => {
+                console.log("er", e);
+                message = e.target.value
+            })
+        }
+        var message = ''
+        var messages = []
+        // console.log("Test")
+        socket.on("connect", () => {
+            console.log("connected"); // x8WIv7-mJelg7on_ALbx
+        })
+        socket.on("getmsg", (data) => {
+            console.log("data->>>", data)
+            window.data = data;
+            var ele = document.getElementById('message-tag');
+            // messages.push(data)
+            // messages.map((itm) => {
+            //     // log
+            //     const preEle = document.createAttribute('pre')
+            //     preEle.innerHTML = "hello world"
+            //     console.log("wjekwh", itm);
+            //     ele.appendChild = preEle
+            // })
+            // ele.innerHTML = kl
+            // const p = document.createElement('pre');
+            // p.innerHTML = JSON.stringify(data)
+            // logEle.append(p);
+            log(`message Received`, data);
+            socket.emit("status", {
+                userid: data?.user
+            })
+        })
+        console.log(window.data, 'window.data');
+        socket.on("usersList", data => {
+            console.log(data, "data wwe");
+            var ul = document.getElementById("usersList");
+            ul.innerHTML = ''
+            data.users.map((item) => {
+                var li = document.createElement("li");
+                li.setAttribute('class', 'activenode')
+                var statusNode = document.createElement("p")
+                statusNode.setAttribute('class', 'statusText')
+                if (item.isActive) {
+                    statusNode.innerHTML = 'online'
+                } else {
+                    statusNode.setAttribute('class', 'statusTextOffline')
+                    statusNode.innerHTML = 'offline'
+                }
+                var idNode = document.createElement("p")
+                idNode.innerHTML = item.id
+                li.appendChild(statusNode);
+                li.appendChild(idNode);
+                ul.appendChild(li);
+            })
+        })
+
+        function handleclick() {
+            console.log("here we are");
+
+            console.log("message", message);
+            socket.emit("newMsg", {
+                userid: 1212121218922,
+                message: message
+            }, (res) => {
+                console.log(res, "response");
+
+            })
+            const inputEle = document.getElementById('message-input')
+            inputEle.value = ''
+        }
+        function log(...args) {
+            const logEle = document.getElementById('logs');
+            const p = document.createElement('pre');
+            p.innerHTML = args.map(arg => typeof arg == 'object' ? syntaxHighlight(JSON.stringify(arg, null, 2)) : arg).join(' ');
+            logEle.append(p);
+            console.log(...args);
+        }
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                console.log("match", match);
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+    </script>
+</head>
+
+<body>
+    <h3>Socket</h3>
+    <div id="message-tag"></div>
+    <input name="message" id="message-input" />
+    <button id="buttton" onclick="handleclick()">Submit</button>
+    <div class="row">
+        <div id="logs"></div>
+        <ul id="usersList">
+    </div>
+
+    </ul>
+</body>
+
+</html>
